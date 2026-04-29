@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Au·Ag"/>
+<meta name="theme-color" content="#FAF7F2"/>
+<title>Au·Ag Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════
+   RESET & TOKENS
+═══════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{height:100%;overflow:hidden;}
+body{
+  height:100%;font-family:'Outfit',sans-serif;
+  background:#FAF7F2;color:#1A1612;
+  font-size:14px;overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+:root{
+  --cream:#FAF7F2;
+  --cream2:#F3EEE5;
+  --cream3:#EBE3D5;
+  --white:#FFFFFF;
+  --gold:#B8860B;
+  --gold-bright:#D4A017;
+  --gold-light:#F2E0A0;
+  --gold-pale:#FBF5E0;
+  --gold-border:#E0C86A;
+  --silver:#708090;
+  --silver-pale:#EEF3F7;
+  --silver-border:#B0C4D4;
+  --ink:#1A1612;
+  --ink2:#3D3328;
+  --ink3:#5C4F3D;
+  --muted:#8C7B68;
+  --faint:#B0A090;
+  --border:#DDD4C0;
+  --border2:#E8E0D0;
+  --green:#2D6A4F;
+  --green-pale:#F0FAF5;
+  --green-light:#D8F0E4;
+  --red:#8B2020;
+  --red-pale:#FDF0F0;
+  --amber:#7A5000;
+  --amber-pale:#FEF7EC;
+  --blue:#1A3A5C;
+  --blue-pale:#EFF5FB;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --nav-h: 64px;
+}
+
+/* ═══════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════ */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+
+/* STATUS BAR SPACER */
+.statusbar{height:env(safe-area-inset-top,0);background:var(--white);}
+
+/* TOP HEADER */
+.header{
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+  height:54px;display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;position:relative;z-index:10;
+}
+.header-logo{display:flex;align-items:center;gap:9px;}
+.logo-mark{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#D4A017,#B8860B);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;box-shadow:0 2px 8px rgba(180,130,0,.25);
+}
+.logo-text{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);}
+.logo-text em{color:var(--gold);font-style:normal;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.hdr-btn{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid var(--border);background:var(--cream2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;cursor:pointer;transition:all .15s;
+}
+.hdr-btn:active{background:var(--cream3);}
+.countdown-badge{
+  font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;
+  background:var(--gold-pale);border:1px solid var(--gold-border);
+  color:var(--gold);padding:5px 9px;border-radius:20px;white-space:nowrap;
+}
+
+/* SCROLL AREA */
+.scroll-area{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:14px 14px 0;
+  padding-bottom:calc(var(--nav-h) + var(--safe-bottom) + 14px);
+  -webkit-overflow-scrolling:touch;
+}
+.scroll-area::-webkit-scrollbar{display:none;}
+
+/* PANELS */
+.panel{display:none;animation:slideUp .2s ease;}
+.panel.active{display:block;}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ═══════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════ */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  height:calc(var(--nav-h) + var(--safe-bottom));
+  background:var(--white);
+  border-top:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-around;
+  padding-top:6px;
+  padding-bottom:var(--safe-bottom);
+  z-index:100;
+  box-shadow:0 -4px 20px rgba(60,40,10,.08);
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 4px;border-radius:12px;cursor:pointer;
+  transition:all .15s;flex:1;max-width:60px;
+  border:none;background:transparent;
+}
+.nav-item:active{background:var(--cream2);}
+.nav-icon{font-size:20px;line-height:1;}
+.nav-label{font-size:9px;font-weight:500;color:var(--faint);font-family:'Outfit',sans-serif;}
+.nav-item.active .nav-label{color:var(--gold);font-weight:600;}
+.nav-item.active .nav-icon{filter:none;}
+.nav-dot{
+  width:4px;height:4px;border-radius:50%;
+  background:var(--gold);margin-top:1px;
+  opacity:0;transition:opacity .15s;
+}
+.nav-item.active .nav-dot{opacity:1;}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:16px;padding:16px;
+  box-shadow:0 1px 6px rgba(60,40,10,.06);
+  margin-bottom:12px;
+}
+.card.gold-tint{background:linear-gradient(145deg,#FFFBF0,var(--white));border-color:var(--gold-border);}
+.card.silver-tint{background:linear-gradient(145deg,#F4F8FC,var(--white));border-color:var(--silver-border);}
+.card.green-tint{border-color:#9FD0B8;}
+.card.amber-tint{border-color:#DFBF80;}
+.card.flat{box-shadow:none;background:var(--cream2);border-color:var(--border2);}
+
+/* METRIC CARD */
+.metric-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:16px;padding:16px;
+  box-shadow:0 1px 6px rgba(60,40,10,.06);
+  flex:1;min-width:0;
+}
+.mc-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.mc-value{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;line-height:1.1;margin-bottom:3px;}
+.mc-sub{font-size:10px;color:var(--muted);}
+.mc-badge{display:inline-flex;align-items:center;font-size:9px;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:20px;border:1px solid;margin-top:7px;}
+
+/* SECTION TITLE */
+.sec{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:12px;}
+
+/* ═══════════════════════════════════════
+   GRID HELPERS
+═══════════════════════════════════════ */
+.row{display:flex;gap:10px;margin-bottom:12px;}
+.row>.metric-card{flex:1;}
+.col{display:flex;flex-direction:column;gap:12px;}
+
+/* ═══════════════════════════════════════
+   PROGRESS BARS
+═══════════════════════════════════════ */
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.prog-name{font-size:12px;font-weight:500;}
+.prog-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);}
+.prog-track{height:7px;background:var(--cream3);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.prog-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+
+/* ═══════════════════════════════════════
+   TIMELINE
+═══════════════════════════════════════ */
+.tl{position:relative;padding-left:22px;}
+.tl::before{content:'';position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:var(--border2);}
+.tl-item{position:relative;margin-bottom:16px;}
+.tl-item:last-child{margin-bottom:0;}
+.tl-dot{
+  position:absolute;left:-22px;top:3px;
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--border);background:var(--white);
+}
+.tl-dot.now{background:var(--gold-bright);border-color:var(--gold-bright);box-shadow:0 0 0 3px var(--gold-light);}
+.tl-dot.future{background:var(--cream3);border-color:var(--border);}
+.tl-dot.check{background:var(--amber-pale);border-color:#DFBF80;}
+.tl-when{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);margin-bottom:2px;}
+.tl-title{font-size:13px;font-weight:600;color:var(--ink2);}
+.tl-desc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5;}
+
+/* ═══════════════════════════════════════
+   MONTH SCROLL GRID
+═══════════════════════════════════════ */
+.month-scroll{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:7px;
+  margin-bottom:14px;
+}
+.mc{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:12px;padding:10px 7px;text-align:center;
+  position:relative;transition:all .15s;
+  box-shadow:0 1px 3px rgba(60,40,10,.04);
+}
+.mc:active{transform:scale(.97);}
+.mc.checkpoint{border-color:#DFBF80;background:var(--amber-pale);}
+.mc.goal{border-color:var(--gold-bright);background:var(--gold-pale);animation:shimmer 3s infinite;}
+.mc.logged{border-color:#9FD0B8;background:var(--green-pale);}
+@keyframes shimmer{0%,100%{box-shadow:0 0 0 0 rgba(180,130,0,.15);}50%{box-shadow:0 0 8px 2px rgba(180,130,0,.1);}}
+.mc-n{font-size:8px;color:var(--faint);font-family:'JetBrains Mono',monospace;}
+.mc-m{font-size:10px;font-weight:600;margin:2px 0;color:var(--ink2);}
+.mc-v{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--gold);}
+.mc-p{font-size:8px;color:var(--muted);margin-top:1px;}
+.mc-flag{position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+
+/* ═══════════════════════════════════════
+   TABLE (horizontal scroll)
+═══════════════════════════════════════ */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -14px;padding:0 14px;}
+table.tbl{width:100%;border-collapse:collapse;min-width:600px;}
+table.tbl th{
+  font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.07em;padding:9px 10px;text-align:left;
+  border-bottom:2px solid var(--border2);background:var(--cream2);white-space:nowrap;
+  position:sticky;top:0;z-index:2;
+}
+table.tbl td{padding:10px 10px;font-size:11px;border-bottom:1px solid var(--border2);}
+table.tbl tr:last-child td{border-bottom:none;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:10px;}
+
+/* ═══════════════════════════════════════
+   BADGES
+═══════════════════════════════════════ */
+.badge{display:inline-flex;align-items:center;font-size:9px;font-family:'JetBrains Mono',monospace;padding:2px 8px;border-radius:20px;border:1px solid;font-weight:500;}
+.bg{background:var(--gold-pale);color:var(--gold);border-color:var(--gold-border);}
+.bs{background:var(--silver-pale);color:var(--silver);border-color:var(--silver-border);}
+.bgr{background:var(--green-pale);color:var(--green);border-color:#9FD0B8;}
+.ba{background:var(--amber-pale);color:var(--amber);border-color:#DFBF80;}
+.bb{background:var(--blue-pale);color:var(--blue);border-color:#9AC0E0;}
+.bm{background:var(--cream2);color:var(--muted);border-color:var(--border);}
+.br{background:var(--red-pale);color:var(--red);border-color:#D09090;}
+
+/* ═══════════════════════════════════════
+   SIP PILLS (mobile)
+═══════════════════════════════════════ */
+.sip-pill{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:14px;padding:14px;margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(60,40,10,.05);
+  transition:all .15s;
+}
+.sip-pill:active{background:var(--cream2);}
+.sip-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.sip-info{flex:1;padding:0 12px;}
+.sip-name{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:2px;line-height:1.3;}
+.sip-meta{font-size:10px;color:var(--muted);line-height:1.4;}
+.sip-amt{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--gold);flex-shrink:0;}
+
+/* ═══════════════════════════════════════
+   PLATFORM STEPS
+═══════════════════════════════════════ */
+.platform-tab{display:flex;gap:8px;margin-bottom:14px;}
+.ptab{
+  flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);
+  background:var(--cream2);font-size:12px;font-weight:500;
+  color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;
+}
+.ptab.active{background:var(--gold-pale);border-color:var(--gold-border);color:var(--gold);font-weight:600;}
+.platform-content{display:none;}
+.platform-content.active{display:block;}
+.step-item{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:11px 0;border-bottom:1px solid var(--border2);
+}
+.step-item:last-child{border-bottom:none;}
+.step-num{
+  width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;
+  background:var(--gold-pale);color:var(--gold);border:1px solid var(--gold-border);
+  margin-top:1px;
+}
+.step-text{font-size:12px;line-height:1.6;color:var(--ink2);}
+.step-highlight{color:var(--gold);font-weight:600;}
+
+/* ═══════════════════════════════════════
+   SIMULATOR
+═══════════════════════════════════════ */
+.slider-block{margin-bottom:18px;}
+.slider-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.slider-name{font-size:12px;font-weight:500;color:var(--ink2);}
+.slider-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:5px;
+  border-radius:3px;background:var(--cream3);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:22px;height:22px;border-radius:50%;
+  background:var(--gold-bright);cursor:pointer;
+  border:3px solid var(--white);
+  box-shadow:0 1px 8px rgba(180,130,0,.3);
+}
+.result-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border2);
+}
+.result-row:last-child{border-bottom:none;}
+.r-lbl{font-size:12px;color:var(--ink3);}
+.r-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;}
+.result-big{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px;background:var(--gold-pale);border-radius:12px;
+  border:1px solid var(--gold-border);margin-top:4px;
+}
+.rb-lbl{font-size:12px;font-weight:700;color:var(--ink);}
+.rb-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--gold);}
+
+/* ═══════════════════════════════════════
+   TAX
+═══════════════════════════════════════ */
+.form-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;display:block;}
+.form-row{margin-bottom:14px;}
+input[type=number],select{
+  background:var(--cream2);border:1px solid var(--border);
+  border-radius:10px;color:var(--ink);
+  font-family:'JetBrains Mono',monospace;font-size:13px;
+  padding:11px 13px;outline:none;width:100%;
+  transition:border-color .15s;
+  -webkit-appearance:none;
+}
+input[type=number]:focus,select:focus{
+  border-color:var(--gold-bright);
+  background:var(--white);
+  box-shadow:0 0 0 3px rgba(180,130,0,.1);
+}
+.tax-box{background:var(--cream2);border-radius:12px;padding:14px;border:1px solid var(--border2);margin-bottom:10px;}
+.tax-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border2);}
+.tax-row:last-child{border-bottom:none;}
+.t-lbl{font-size:12px;color:var(--ink3);}
+.t-val{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;}
+
+/* ═══════════════════════════════════════
+   CHECKLIST
+═══════════════════════════════════════ */
+.check-section{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:10px;
+  box-shadow:0 1px 4px rgba(60,40,10,.05);
+}
+.check-phase{font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;margin-bottom:12px;}
+.check-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border2);}
+.check-item:last-child{border-bottom:none;}
+.check-box{
+  width:22px;height:22px;border-radius:6px;
+  border:1.5px solid var(--border);background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;font-size:11px;
+  transition:all .15s;user-select:none;color:var(--white);
+}
+.check-box:active{transform:scale(.9);}
+.check-box.done{background:var(--green);border-color:var(--green);}
+.check-when{font-size:9.5px;font-family:'JetBrains Mono',monospace;color:var(--muted);width:68px;flex-shrink:0;padding-top:2px;line-height:1.4;}
+.check-text{font-size:12px;line-height:1.6;color:var(--ink2);flex:1;}
+.check-text.done{text-decoration:line-through;color:var(--muted);}
+.progress-pill{
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--green-pale);border:1px solid #9FD0B8;
+  border-radius:12px;padding:12px 14px;margin-bottom:14px;
+}
+.pp-txt{font-size:12px;font-weight:600;color:var(--green);}
+.pp-pct{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--green);}
+
+/* ═══════════════════════════════════════
+   ALTS
+═══════════════════════════════════════ */
+.alt-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:16px;padding:16px;margin-bottom:12px;
+  box-shadow:0 1px 4px rgba(60,40,10,.05);
+}
+.alt-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:10px;}
+.alt-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--ink);}
+.alt-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.verdict{font-size:9px;font-family:'JetBrains Mono',monospace;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid;white-space:nowrap;flex-shrink:0;}
+.v-yes{background:var(--green-pale);color:var(--green);border-color:#9FD0B8;}
+.v-cond{background:var(--amber-pale);color:var(--amber);border-color:#DFBF80;}
+.v-no{background:var(--red-pale);color:var(--red);border-color:#D09090;}
+.alt-body{font-size:11.5px;color:var(--ink3);line-height:1.75;}
+.alt-rec{
+  margin-top:12px;padding:12px;
+  background:var(--gold-pale);border-radius:10px;
+  font-size:11.5px;line-height:1.6;color:var(--amber);
+  border-left:2.5px solid var(--gold-bright);
+}
+
+/* ═══════════════════════════════════════
+   LOG ACTUAL
+═══════════════════════════════════════ */
+.log-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:var(--cream2);
+  border-radius:10px;margin-bottom:6px;border:1px solid transparent;
+}
+.log-item:focus-within{border-color:var(--gold-border);background:var(--white);}
+.log-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);width:28px;flex-shrink:0;text-align:center;}
+.log-mon{font-size:11px;font-weight:500;color:var(--ink2);width:68px;flex-shrink:0;}
+.log-input{
+  flex:1;background:var(--white);border:1px solid var(--border);
+  border-radius:8px;color:var(--ink);font-family:'JetBrains Mono',monospace;
+  font-size:12px;padding:7px 10px;outline:none;min-width:0;
+}
+.log-input:focus{border-color:var(--gold-bright);}
+.log-status{width:24px;flex-shrink:0;text-align:center;font-size:13px;}
+
+/* ═══════════════════════════════════════
+   MODALS (bottom sheets)
+═══════════════════════════════════════ */
+.sheet-overlay{
+  position:fixed;inset:0;background:rgba(30,20,5,.5);
+  z-index:200;display:flex;align-items:flex-end;
+  backdrop-filter:blur(4px);
+}
+.sheet-overlay.hidden{display:none;}
+.sheet{
+  background:var(--white);
+  border-radius:22px 22px 0 0;
+  padding:20px 20px 0;
+  width:100%;
+  padding-bottom:calc(20px + var(--safe-bottom));
+  animation:sheetUp .3s cubic-bezier(.34,1.2,.64,1);
+  max-height:90vh;overflow-y:auto;
+}
+.sheet::-webkit-scrollbar{display:none;}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sheet-handle{
+  width:40px;height:4px;background:var(--cream3);
+  border-radius:2px;margin:0 auto 18px;
+}
+.sheet-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:18px;color:var(--ink);}
+.sheet-actions{display:flex;gap:10px;margin-top:16px;margin-bottom:4px;}
+.btn{
+  flex:1;padding:13px;border-radius:12px;border:none;
+  cursor:pointer;font-family:'Outfit',sans-serif;font-size:14px;
+  font-weight:600;transition:all .15s;text-align:center;
+}
+.btn:active{transform:scale(.97);}
+.btn-gold{
+  background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+  color:var(--white);box-shadow:0 3px 12px rgba(180,130,0,.3);
+}
+.btn-outline{background:var(--cream2);border:1px solid var(--border);color:var(--muted);}
+.btn-sm{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:9px 16px;border-radius:10px;border:none;
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.btn-sm:active{transform:scale(.97);}
+.btn-sm-gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:var(--white);}
+.btn-sm-outline{background:var(--cream2);border:1px solid var(--border);color:var(--muted);}
+.btn-sm-red{background:var(--red-pale);border:1px solid #D09090;color:var(--red);}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 12px);
+  left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:var(--cream);
+  border-radius:24px;padding:11px 20px;font-size:13px;
+  font-weight:500;z-index:300;white-space:nowrap;
+  transition:all .3s cubic-bezier(.34,1.4,.64,1);
+  opacity:0;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+
+/* ═══════════════════════════════════════
+   MINI CHART
+═══════════════════════════════════════ */
+.bar-chart{display:flex;align-items:flex-end;gap:3px;height:110px;margin-bottom:8px;}
+.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.bc-stack{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:1px;width:100%;}
+.bc-seg{border-radius:2px 2px 0 0;min-height:2px;}
+.bc-lbl{font-size:7.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;text-align:center;line-height:1.2;}
+
+/* ═══════════════════════════════════════
+   INFO CALLOUTS
+═══════════════════════════════════════ */
+.callout{
+  padding:13px 14px;border-radius:12px;
+  font-size:12px;line-height:1.7;margin-bottom:10px;
+  border-left:3px solid;
+}
+.callout-gold{background:var(--gold-pale);border-color:var(--gold-bright);color:var(--amber);}
+.callout-green{background:var(--green-pale);border-color:#9FD0B8;color:var(--green);}
+.callout-amber{background:var(--amber-pale);border-color:#DFBF80;color:var(--amber);}
+.callout-red{background:var(--red-pale);border-color:#D09090;color:var(--red);}
+
+/* ═══════════════════════════════════════
+   MISC
+═══════════════════════════════════════ */
+.divider{height:1px;background:var(--border2);margin:14px 0;}
+.total-bar{
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(135deg,var(--gold-pale),#FFFDF5);
+  border:1px solid var(--gold-border);border-radius:14px;
+  padding:14px 18px;margin-bottom:14px;
+  box-shadow:0 1px 6px rgba(180,130,0,.1);
+}
+.tb-label{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:var(--ink);}
+.tb-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- STATUS BAR -->
+<div class="statusbar"></div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="logo-mark">⚖</div>
+    <div class="logo-text"><em>Au·Ag</em> Tracker</div>
+  </div>
+  <div class="header-right">
+    <div class="countdown-badge" id="cd-badge">⏳ …</div>
+    <div class="hdr-btn" onclick="openPriceSheet()">✎</div>
+  </div>
+</div>
+
+<!-- SCROLL AREA -->
+<div class="scroll-area" id="scroll-area">
+
+<!-- ════════ OVERVIEW ════════ -->
+<div id="panel-overview" class="panel active">
+
+  <div class="row">
+    <div class="metric-card gold-tint">
+      <div class="mc-label">5 Tola Gold</div>
+      <div class="mc-value" style="color:var(--gold);font-size:18px;" id="ov-gold">₹8,90,000</div>
+      <div class="mc-sub" id="ov-gold-s">₹1,78,000/tola</div>
+      <div class="mc-badge bg">58.3g · 24K</div>
+    </div>
+    <div class="metric-card silver-tint">
+      <div class="mc-label">2 Kg Silver</div>
+      <div class="mc-value" style="color:var(--silver);font-size:18px;" id="ov-silver">₹5,20,000</div>
+      <div class="mc-sub" id="ov-silver-s">₹2,60,000/kg</div>
+      <div class="mc-badge bs">2,000g · 999</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="metric-card green-tint">
+      <div class="mc-label">Total Target</div>
+      <div class="mc-value" style="font-size:18px;" id="ov-total">₹14,10,000</div>
+      <div class="mc-sub">at current prices</div>
+      <div class="mc-badge bgr">~22 months</div>
+    </div>
+    <div class="metric-card amber-tint">
+      <div class="mc-label">Days to Goal</div>
+      <div class="mc-value" style="color:var(--amber);font-size:18px;" id="ov-days">—</div>
+      <div class="mc-sub">until Feb 2028</div>
+      <div class="mc-badge ba" id="ov-weeks">— weeks</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec">Corpus Projection</div>
+    <div class="bar-chart" id="proj-chart"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);"><span style="width:9px;height:9px;border-radius:2px;background:var(--gold-bright);display:inline-block;"></span>Metals</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);"><span style="width:9px;height:9px;border-radius:2px;background:var(--green);display:inline-block;"></span>Equity</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);"><span style="width:9px;height:9px;border-radius:2px;background:#5090C0;display:inline-block;"></span>Liquid</div>
+    </div>
+  </div>
+
+  <!-- Allocation card -->
+  <div class="card">
+    <div class="sec">Monthly Allocation · ₹50,000</div>
+    <div class="prog-row"><span class="prog-name" style="color:var(--gold);">Gold ETF</span><span class="prog-pct">₹15K · 30%</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:30%;background:var(--gold-bright);"></div></div>
+    <div class="prog-row"><span class="prog-name" style="color:var(--silver);">Silver ETF</span><span class="prog-pct">₹8K · 16%</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:16%;background:var(--silver);"></div></div>
+    <div class="prog-row"><span class="prog-name" style="color:var(--green);">Equity SIPs</span><span class="prog-pct">₹22K · 44%</span></div>
+    <div class="prog-track"><div class="prog-fill" style="width:44%;background:var(--green);"></div></div>
+    <div class="prog-row"><span class="prog-name" style="color:#5090C0;">Liquid Fund</span><span class="prog-pct">₹5K · 10%</span></div>
+    <div class="prog-track" style="margin-bottom:0;"><div class="prog-fill" style="width:10%;background:#5090C0;"></div></div>
+  </div>
+
+  <!-- Milestones -->
+  <div class="card">
+    <div class="sec">Key Milestones</div>
+    <div class="tl">
+      <div class="tl-item"><div class="tl-dot now"></div>
+        <div class="tl-when">Apr 2026</div>
+        <div class="tl-title" style="color:var(--gold);">🚀 Setup & Launch</div>
+        <div class="tl-desc">Open demat, activate 5 SIPs, UPI mandate live</div>
+      </div>
+      <div class="tl-item"><div class="tl-dot check"></div>
+        <div class="tl-when">Oct 2026</div>
+        <div class="tl-title">Checkpoint 1 · ~₹3.2L</div>
+        <div class="tl-desc">Review corpus. Rebalance if gold moved ±15%.</div>
+      </div>
+      <div class="tl-item"><div class="tl-dot check"></div>
+        <div class="tl-when">Apr 2027</div>
+        <div class="tl-title">Checkpoint 2 · ~₹6.7L</div>
+        <div class="tl-desc">Hold equity — do not exit even if markets fall.</div>
+      </div>
+      <div class="tl-item"><div class="tl-dot check"></div>
+        <div class="tl-when">Oct 2027</div>
+        <div class="tl-title">Pre-Exit · ~₹10.6L</div>
+        <div class="tl-desc">Quote from MMTC-PAMP. Plan staggered exit.</div>
+      </div>
+      <div class="tl-item"><div class="tl-dot future" style="border-color:var(--gold-bright);"></div>
+        <div class="tl-when">Feb 2028</div>
+        <div class="tl-title" style="color:var(--gold);">🎯 Buy Physical Au + Ag</div>
+        <div class="tl-desc">Redeem ETFs → 5 tola gold + 2 kg silver bars</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-gold"><strong>Why ETFs over cash:</strong> ETFs track physical prices in real time — your savings never fall behind rising gold prices. At month 22, redeem and buy at that day's rate.</div>
+  <div class="callout callout-green"><strong>The ₹62K equity bonus:</strong> ₹22K/month in equity SIPs at 14% CAGR generates ~₹62K in returns — cutting your timeline from 28 to 22 months.</div>
+  <div class="callout callout-amber" style="margin-bottom:0;"><strong>Silver timing:</strong> ₹2.6L/kg today vs ₹4.27L in Jan 2026 peak. SIP averaging from near cycle lows is a smart entry strategy.</div>
+
+</div><!-- end overview -->
+
+
+<!-- ════════ MONTHLY ════════ -->
+<div id="panel-monthly" class="panel">
+  <div class="sec">Month-by-Month Build</div>
+  <div class="month-scroll" id="month-grid"></div>
+  <div class="card">
+    <div class="tbl-scroll">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Mo.</th><th>Period</th><th>Corpus</th><th>%</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="monthly-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div style="font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
+    ⚠ Projections use blended monthly returns (metals 8% pa, equity 14% pa). Actual results vary.
+  </div>
+</div>
+
+
+<!-- ════════ SIP PLAN ════════ -->
+<div id="panel-sips" class="panel">
+
+  <div class="total-bar">
+    <span class="tb-label">Total monthly SIP</span>
+    <span class="tb-val">₹50,000</span>
+  </div>
+
+  <div class="sip-pill">
+    <div class="sip-icon" style="background:var(--gold-pale);">🥇</div>
+    <div class="sip-info">
+      <div class="sip-name">Nippon India Gold BeES</div>
+      <div class="sip-meta">GOLDBEES · Gold ETF · 1st of month<br>CAGR ~8–10% · Nil exit load</div>
+      <div style="margin-top:5px;"><span class="badge bg">Track gold price</span></div>
+    </div>
+    <div><div class="sip-amt">₹15K</div></div>
+  </div>
+
+  <div class="sip-pill">
+    <div class="sip-icon" style="background:var(--silver-pale);">🥈</div>
+    <div class="sip-info">
+      <div class="sip-name">Mirae Asset Silver ETF</div>
+      <div class="sip-meta">SILVERETF · Silver ETF · 1st of month<br>CAGR ~10–12% · Nil exit load</div>
+      <div style="margin-top:5px;"><span class="badge bgr">Near cycle low</span></div>
+    </div>
+    <div><div class="sip-amt">₹8K</div></div>
+  </div>
+
+  <div class="sip-pill">
+    <div class="sip-icon" style="background:var(--green-pale);">📈</div>
+    <div class="sip-info">
+      <div class="sip-name">Parag Parikh Flexi Cap</div>
+      <div class="sip-meta">Direct Growth · 1st of month<br>5yr CAGR ~15% · 1% exit if &lt;1yr</div>
+      <div style="margin-top:5px;"><span class="badge bgr">Core growth</span></div>
+    </div>
+    <div><div class="sip-amt">₹10K</div></div>
+  </div>
+
+  <div class="sip-pill">
+    <div class="sip-icon" style="background:var(--green-pale);">🚀</div>
+    <div class="sip-info">
+      <div class="sip-name">HDFC Mid-Cap Opportunities</div>
+      <div class="sip-meta">Direct Growth · 1st of month<br>5yr CAGR ~18% · 1% exit if &lt;1yr</div>
+      <div style="margin-top:5px;"><span class="badge ba">Higher volatility</span></div>
+    </div>
+    <div><div class="sip-amt">₹7K</div></div>
+  </div>
+
+  <div class="sip-pill">
+    <div class="sip-icon" style="background:var(--blue-pale);">🛡️</div>
+    <div class="sip-info">
+      <div class="sip-name">Mirae Asset Large Cap</div>
+      <div class="sip-meta">Direct Growth · 1st of month<br>5yr CAGR ~13% · low drawdown</div>
+      <div style="margin-top:5px;"><span class="badge bb">Stability anchor</span></div>
+    </div>
+    <div><div class="sip-amt">₹5K</div></div>
+  </div>
+
+  <div class="sip-pill">
+    <div class="sip-icon" style="background:var(--cream2);">💧</div>
+    <div class="sip-info">
+      <div class="sip-name">ICICI Pru Liquid Fund</div>
+      <div class="sip-meta">Direct Growth · ~6–7% pa<br>T+1 redemption · No exit load</div>
+      <div style="margin-top:5px;"><span class="badge bgr">Emergency buffer</span></div>
+    </div>
+    <div><div class="sip-amt">₹5K</div></div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sec">Platform Setup</div>
+
+  <div class="platform-tab">
+    <div class="ptab active" onclick="switchPlatform('gz',this)">Groww / Zerodha</div>
+    <div class="ptab" onclick="switchPlatform('up',this)">Upstox</div>
+  </div>
+
+  <div class="card" id="plat-gz" style="padding:14px;">
+    <div class="step-item"><div class="step-num">1</div><div class="step-text">App → Mutual Funds → Explore → always filter <span class="step-highlight">Direct · Growth</span></div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-text">Search fund → Start SIP → set amount → date: <span class="step-highlight">1st of month</span></div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-text">Set UPI AutoPay mandate. Repeat for all 4 MF SIPs.</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-text">Stocks tab → search <span class="step-highlight">GOLDBEES</span> → Buy ₹15,000 on 1st each month</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-text">Search <span class="step-highlight">SILVERETF</span> → Buy ₹8,000 on 1st each month</div></div>
+    <div class="step-item"><div class="step-num">6</div><div class="step-text"><span style="color:var(--amber);font-weight:600;">⚠ Always Direct plan</span> — saves 0.5–1% expense ratio per year</div></div>
+  </div>
+
+  <div class="card" id="plat-up" style="padding:14px;display:none;">
+    <div class="step-item"><div class="step-num">1</div><div class="step-text">Bottom nav → Mutual Funds → always select <span class="step-highlight">Direct</span> plan</div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-text">Search fund → SIP tab → Monthly → 1st → UPI mandate</div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-text">For ETFs: use <span class="step-highlight">GTT (Good Till Triggered)</span> orders — auto-buys at target price monthly</div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-text">₹20 per ETF trade. On ₹15K = only 0.13% — completely acceptable</div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-text">Enable <span class="step-highlight">2FA</span> (Google Authenticator) + add nominee (mandatory SEBI 2023)</div></div>
+    <div class="step-item"><div class="step-num">6</div><div class="step-text">Download P&L + capital gains report at year-end for ITR filing</div></div>
+  </div>
+
+</div><!-- end sips -->
+
+
+<!-- ════════ SIMULATOR ════════ -->
+<div id="panel-simulator" class="panel">
+  <div class="sec">What-If Simulator</div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6;">Drag sliders to see how changes affect your goal timeline in real time.</div>
+
+  <div class="card">
+    <div class="slider-block">
+      <div class="slider-hdr"><span class="slider-name">Gold price (₹/tola)</span><span class="slider-val" style="color:var(--gold);" id="sv-gold">₹1,78,000</span></div>
+      <input type="range" id="sl-gold" min="100000" max="300000" step="1000" value="178000" oninput="runSim()">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:3px;"><span>₹1L</span><span>₹3L</span></div>
+    </div>
+    <div class="slider-block">
+      <div class="slider-hdr"><span class="slider-name">Silver price (₹/kg)</span><span class="slider-val" style="color:var(--silver);" id="sv-silver">₹2,60,000</span></div>
+      <input type="range" id="sl-silver" min="100000" max="500000" step="1000" value="260000" oninput="runSim()">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:3px;"><span>₹1L</span><span>₹5L</span></div>
+    </div>
+    <div class="slider-block">
+      <div class="slider-hdr"><span class="slider-name">Monthly investment</span><span class="slider-val" id="sv-monthly">₹50,000</span></div>
+      <input type="range" id="sl-monthly" min="20000" max="100000" step="1000" value="50000" oninput="runSim()">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:3px;"><span>₹20K</span><span>₹1L</span></div>
+    </div>
+    <div class="slider-block">
+      <div class="slider-hdr"><span class="slider-name">Equity CAGR</span><span class="slider-val" style="color:var(--green);" id="sv-eq">14%</span></div>
+      <input type="range" id="sl-eq" min="6" max="25" step="0.5" value="14" oninput="runSim()">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:3px;"><span>6%</span><span>25%</span></div>
+    </div>
+    <div class="slider-block" style="margin-bottom:0;">
+      <div class="slider-hdr"><span class="slider-name">Metal ETF CAGR</span><span class="slider-val" style="color:var(--amber);" id="sv-met">8%</span></div>
+      <input type="range" id="sl-met" min="0" max="20" step="0.5" value="8" oninput="runSim()">
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:3px;"><span>0%</span><span>20%</span></div>
+    </div>
+  </div>
+
+  <div class="result-big">
+    <div>
+      <div style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Months to goal</div>
+      <div style="font-size:11px;color:var(--ink3);" id="sim-date">Goal: Feb 2028</div>
+    </div>
+    <div class="rb-val" id="sim-months">22</div>
+  </div>
+
+  <div class="card">
+    <div class="result-row"><span class="r-lbl">Gold target</span><span class="r-val" style="color:var(--gold);" id="sim-r-gold">₹8,90,000</span></div>
+    <div class="result-row"><span class="r-lbl">Silver target</span><span class="r-val" style="color:var(--silver);" id="sim-r-silver">₹5,20,000</span></div>
+    <div class="result-row"><span class="r-lbl">Total target</span><span class="r-val" id="sim-r-total">₹14,10,000</span></div>
+    <div class="result-row"><span class="r-lbl">Monthly investment</span><span class="r-val" id="sim-r-monthly">₹50,000</span></div>
+    <div class="result-row"><span class="r-lbl">SIP returns boost</span><span class="r-val" style="color:var(--green);" id="sim-r-boost">~₹62K</span></div>
+    <div class="result-row"><span class="r-lbl">Raw months (no returns)</span><span class="r-val" id="sim-r-raw">28.2</span></div>
+  </div>
+
+  <div class="callout callout-amber" id="sim-advice" style="margin-bottom:0;"></div>
+</div><!-- end simulator -->
+
+
+<!-- ════════ LOG ACTUAL ════════ -->
+<div id="panel-actual" class="panel">
+
+  <div class="row">
+    <div class="metric-card green-tint">
+      <div class="mc-label">Total Invested</div>
+      <div class="mc-value" style="color:var(--green);font-size:18px;" id="act-total">₹0</div>
+      <div class="mc-sub" id="act-sub">0 months logged</div>
+    </div>
+    <div class="metric-card amber-tint">
+      <div class="mc-label">Variance</div>
+      <div class="mc-value" style="font-size:18px;" id="act-var">₹0</div>
+      <div class="mc-sub" id="act-var-sub">vs plan</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec">Log Investments</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Enter what you actually invested each month. Saves to your browser.</div>
+    <div id="log-rows"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn-sm btn-sm-gold" onclick="saveActual()">💾 Save</button>
+      <button class="btn-sm btn-sm-red" onclick="clearActual()">Clear All</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec" style="margin-bottom:10px;">Actual vs Expected</div>
+    <div id="act-chart" style="display:flex;align-items:flex-end;gap:3px;height:80px;"></div>
+    <div style="display:flex;gap:12px;margin-top:6px;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);"><span style="width:9px;height:9px;border-radius:2px;background:var(--green);display:inline-block;"></span>Actual</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);"><span style="width:9px;height:9px;border-radius:2px;background:var(--cream3);display:inline-block;"></span>Expected</div>
+    </div>
+  </div>
+</div><!-- end actual -->
+
+
+<!-- ════════ MILESTONES ════════ -->
+<div id="panel-milestones" class="panel">
+  <div class="progress-pill">
+    <span class="pp-txt" id="cp-txt">0 / 36 completed</span>
+    <span class="pp-pct" id="cp-pct">0%</span>
+  </div>
+  <div id="milestone-list"></div>
+  <div style="display:flex;gap:10px;margin-bottom:14px;">
+    <button class="btn-sm btn-sm-gold" onclick="saveChecks()">💾 Save</button>
+    <button class="btn-sm btn-sm-outline" onclick="resetChecks()">Reset All</button>
+  </div>
+</div>
+
+
+<!-- ════════ ALTS ════════ -->
+<div id="panel-alts" class="panel">
+  <div class="sec">Crypto & Alternatives</div>
+
+  <div class="alt-card" style="border-color:#DFBF80;">
+    <div class="alt-header">
+      <div><div class="alt-name">Bitcoin / Ethereum</div><div class="alt-sub">CoinDCX · WazirX · Mudrex</div></div>
+      <div class="verdict v-cond">CONDITIONAL YES</div>
+    </div>
+    <div class="alt-body">
+      <span style="color:var(--green);font-weight:600;">✓ Pros:</span> Highest return potential. Low correlation to equities. Mudrex supports SIP from ₹100/day.<br>
+      <span style="color:var(--red);font-weight:600;">✗ Cons:</span> 30% flat tax on ALL gains, TDS 1% per sell. 50–60% drawdowns common.
+    </div>
+    <div class="alt-rec"><strong>My call:</strong> Add ₹3–5K/month only after emergency fund exists. BTC 70% + ETH 30%. Never replace existing SIPs. Use Mudrex.</div>
+  </div>
+
+  <div class="alt-card" style="border-color:#9FD0B8;">
+    <div class="alt-header">
+      <div><div class="alt-name">Sovereign Gold Bonds</div><div class="alt-sub">RBI · NSE/BSE secondary market</div></div>
+      <div class="verdict v-yes">YES IF AVAILABLE</div>
+    </div>
+    <div class="alt-body">
+      <span style="color:var(--green);font-weight:600;">✓ Pros:</span> 2.5% p.a. extra interest on gold (tax-free at 8yr maturity). Zero storage risk, zero GST.<br>
+      <span style="color:var(--red);font-weight:600;">✗ Cons:</span> RBI paused new series since 2024. 8-year lock-in.
+    </div>
+    <div class="alt-rec"><strong>My call:</strong> Buy SGBs on NSE/BSE via Zerodha/Upstox at &lt;3% premium. Replace up to 50% of Gold ETF. You get gold price + 2.5% interest.</div>
+  </div>
+
+  <div class="alt-card">
+    <div class="alt-header">
+      <div><div class="alt-name">US Stocks / Nasdaq 100</div><div class="alt-sub">Motilal Oswal Nasdaq 100 FOF</div></div>
+      <div class="verdict v-no">SKIP</div>
+    </div>
+    <div class="alt-body">Parag Parikh Flexi Cap already holds Alphabet, Meta, Microsoft — you're covered internationally. FOF has double expense ratio. Redundant for this 22-month goal.</div>
+    <div class="alt-rec"><strong>My call:</strong> Skip entirely. International diversification already handled.</div>
+  </div>
+
+  <div class="alt-card" style="border-color:#9AC0E0;">
+    <div class="alt-header">
+      <div><div class="alt-name">NPS — National Pension</div><div class="alt-sub">Tier 1 · Tax saving · Separate goal</div></div>
+      <div class="verdict v-cond">CONSIDER SEPARATELY</div>
+    </div>
+    <div class="alt-body">
+      <span style="color:var(--green);font-weight:600;">✓</span> ₹50K deduction under 80CCD(1B) → saves ₹15K–17.5K in tax if 30% bracket. Use that tax saving to top up this plan.<br>
+      <span style="color:var(--red);font-weight:600;">✗</span> Locked till 60. Not relevant for 22-month goal.
+    </div>
+    <div class="alt-rec"><strong>My call:</strong> Invest ₹50K/year in NPS Tier 1 separately for tax saving. Route the ₹15K saved into this gold/silver plan.</div>
+  </div>
+
+  <div class="alt-card" style="margin-bottom:0;">
+    <div class="alt-header">
+      <div><div class="alt-name">P2P Lending / REITs</div><div class="alt-sub">Faircent · LenDenClub / Embassy REIT</div></div>
+      <div class="verdict v-no">SKIP BOTH</div>
+    </div>
+    <div class="alt-body">P2P: real NPA risk, poor liquidity. REITs: excellent long-term, but 22 months is too short a horizon. Come back to Embassy/Mindspace REIT after month 22.</div>
+    <div class="alt-rec"><strong>My call:</strong> Skip P2P. Add REITs as next goal after Feb 2028.</div>
+  </div>
+</div><!-- end alts -->
+
+</div><!-- end scroll area -->
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="showPanel('overview',this)">
+    <span class="nav-icon">📊</span><span class="nav-label">Overview</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" onclick="showPanel('monthly',this)">
+    <span class="nav-icon">📅</span><span class="nav-label">Monthly</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" onclick="showPanel('sips',this)">
+    <span class="nav-icon">💸</span><span class="nav-label">SIP Plan</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" onclick="showPanel('simulator',this)">
+    <span class="nav-icon">🔢</span><span class="nav-label">Simulate</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" onclick="showPanel('actual',this)">
+    <span class="nav-icon">✏️</span><span class="nav-label">Log</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" onclick="showPanel('milestones',this)">
+    <span class="nav-icon">✅</span><span class="nav-label">Tasks</span><span class="nav-dot"></span>
+  </button>
+  <button class="nav-item" onclick="showPanel('alts',this)">
+    <span class="nav-icon">₿</span><span class="nav-label">Alts</span><span class="nav-dot"></span>
+  </button>
+</div>
+</div><!-- end app -->
+
+<!-- PRICE BOTTOM SHEET -->
+<div class="sheet-overlay hidden" id="price-sheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Update Prices</div>
+    <div class="form-row">
+      <label class="form-label">Gold (₹ per tola, 24K)</label>
+      <input type="number" id="sh-gold" value="178000" inputmode="numeric"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Silver (₹ per kg, 999)</label>
+      <input type="number" id="sh-silver" value="260000" inputmode="numeric"/>
+    </div>
+    <div style="font-size:11px;color:var(--muted);">All views will recalculate instantly after updating.</div>
+    <div class="sheet-actions">
+      <button class="btn btn-outline" onclick="closeSheet()">Cancel</button>
+      <button class="btn btn-gold" onclick="applyPrices()">Update</button>
+    </div>
+  </div>
+</div>
+
+<!-- TAX BOTTOM SHEET -->
+<div class="sheet-overlay hidden" id="tax-sheet">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Tax Estimator</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Estimates tax at Month 22 redemption (Feb 2028).</div>
+    <div class="form-row">
+      <label class="form-label">Income Tax Slab</label>
+      <select id="tx-slab" onchange="calcTax()">
+        <option value="0">0% (below ₹3L)</option>
+        <option value="5">5% (₹3L–7L)</option>
+        <option value="10">10% (₹7L–10L)</option>
+        <option value="20" selected>20% (₹10L–12L)</option>
+        <option value="30">30% (above ₹12L)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Corpus at Month 22 (₹)</label>
+      <input type="number" id="tx-corpus" value="1450000" oninput="calcTax()" inputmode="numeric"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Total Invested (₹)</label>
+      <input type="number" id="tx-inv" value="1100000" oninput="calcTax()" inputmode="numeric"/>
+    </div>
+    <div id="tax-result" style="margin-top:4px;"></div>
+    <div style="height:calc(var(--safe-bottom) + 4px);"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════
+   STATE
+══════════════════════════════ */
+const S={goldPrice:178000,silverPrice:260000,monthly:50000,eqCagr:14,metCagr:8,logs:{},checks:{}};
+try{const sv=localStorage.getItem('auag_m');if(sv)Object.assign(S,JSON.parse(sv));}catch(e){}
+const save=()=>{try{localStorage.setItem('auag_m',JSON.stringify(S));}catch(e){}};
+
+const MNS=['May 26','Jun 26','Jul 26','Aug 26','Sep 26','Oct 26','Nov 26','Dec 26','Jan 27','Feb 27','Mar 27','Apr 27','May 27','Jun 27','Jul 27','Aug 27','Sep 27','Oct 27','Nov 27','Dec 27','Jan 28','Feb 28'];
+const MNL=['May 2026','Jun 2026','Jul 2026','Aug 2026','Sep 2026','Oct 2026','Nov 2026','Dec 2026','Jan 2027','Feb 2027','Mar 2027','Apr 2027','May 2027','Jun 2027','Jul 2027','Aug 2027','Sep 2027','Oct 2027','Nov 2027','Dec 2027','Jan 2028','Feb 2028'];
+const fmt=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const fmtK=n=>n>=100000?'₹'+(n/100000).toFixed(1)+'L':'₹'+(n/1000).toFixed(0)+'K';
+
+function project(tgt,mo,eq,mt,mx=36){
+  const r=(eq/100/12*.44+mt/100/12*.46+.005*.10);
+  let c=0;const o=[];
+  for(let i=1;i<=mx;i++){c=c*(1+r)+mo;o.push({n:i,corpus:Math.round(c),pct:Math.min(100,(c/tgt)*100)});if(c>=tgt)break;}
+  return o;
+}
+const getT=()=>S.goldPrice*5+S.silverPrice*2;
+const getP=()=>project(getT(),S.monthly,S.eqCagr,S.metCagr);
+
+function addMonths(d,n){const r=new Date(d);r.setMonth(r.getMonth()+n);return r;}
+const goalDt=m=>addMonths(new Date(2026,4,1),m-1).toLocaleString('en-IN',{month:'short',year:'numeric'});
+
+/* ══════════════════════════════
+   PANELS
+══════════════════════════════ */
+function showPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('scroll-area').scrollTop=0;
+}
+
+/* ══════════════════════════════
+   PLATFORM TABS
+══════════════════════════════ */
+function switchPlatform(id,btn){
+  document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('plat-gz').style.display=id==='gz'?'block':'none';
+  document.getElementById('plat-up').style.display=id==='up'?'block':'none';
+}
+
+/* ══════════════════════════════
+   COUNTDOWN
+══════════════════════════════ */
+function countdown(){
+  const d=Math.max(0,Math.floor((new Date(2028,1,1)-new Date())/86400000));
+  document.getElementById('cd-badge').textContent=`⏳ ${d.toLocaleString('en-IN')}d`;
+  const el=document.getElementById('ov-days');if(el)el.textContent=d.toLocaleString('en-IN')+' days';
+  const we=document.getElementById('ov-weeks');if(we)we.textContent=Math.floor(d/7)+' weeks';
+}
+setInterval(countdown,60000);countdown();
+
+/* ══════════════════════════════
+   SHEETS
+══════════════════════════════ */
+function openPriceSheet(){
+  document.getElementById('sh-gold').value=S.goldPrice;
+  document.getElementById('sh-silver').value=S.silverPrice;
+  document.getElementById('price-sheet').classList.remove('hidden');
+}
+function openTaxSheet(){
+  calcTax();
+  document.getElementById('tax-sheet').classList.remove('hidden');
+}
+function closeSheet(){
+  document.querySelectorAll('.sheet-overlay').forEach(s=>s.classList.add('hidden'));
+}
+document.querySelectorAll('.sheet-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)closeSheet();});
+});
+function applyPrices(){
+  const g=parseInt(document.getElementById('sh-gold').value);
+  const si=parseInt(document.getElementById('sh-silver').value);
+  if(isNaN(g)||isNaN(si)||g<50000||si<50000){showToast('Invalid prices','error');return;}
+  S.goldPrice=g;S.silverPrice=si;save();closeSheet();rebuildAll();
+  showToast('Prices updated ✓','success');
+}
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+type;
+  setTimeout(()=>{t.className='toast';},2500);
+}
+
+/* ══════════════════════════════
+   REBUILD ALL
+══════════════════════════════ */
+function rebuildAll(){
+  const tgt=getT();
+  // Overview
+  const oe=document.getElementById('ov-gold');if(oe)oe.textContent=fmt(S.goldPrice*5);
+  const oes=document.getElementById('ov-gold-s');if(oes)oes.textContent=`${fmt(S.goldPrice)}/tola`;
+  const os=document.getElementById('ov-silver');if(os)os.textContent=fmt(S.silverPrice*2);
+  const oss=document.getElementById('ov-silver-s');if(oss)oss.textContent=`${fmt(S.silverPrice)}/kg`;
+  const ot=document.getElementById('ov-total');if(ot)ot.textContent=fmt(tgt);
+  buildProjChart();buildMonthGrid();buildMonthTable();
+  buildLogRows();buildActChart();runSim();
+  buildMilestones();
+}
+
+/* ══════════════════════════════
+   PROJECTION CHART
+══════════════════════════════ */
+function buildProjChart(){
+  const el=document.getElementById('proj-chart');if(!el)return;
+  const proj=getP();
+  const pts=[1,3,6,9,12,15,18,20,proj.length].map(n=>proj.find(r=>r.n===n)||proj[proj.length-1]).filter(Boolean);
+  const mx=Math.max(...pts.map(d=>d.corpus));
+  el.innerHTML='';
+  pts.forEach(d=>{
+    const h=Math.round((d.corpus/mx)*100);
+    const mt=Math.round(h*.46),eq=Math.round(h*.44),lq=Math.max(2,h-mt-eq);
+    const c=d.n===proj.length?'var(--gold)':([6,12,18].includes(d.n)?'var(--amber)':'var(--muted)');
+    el.innerHTML+=`<div class="bc-col">
+      <div class="bc-stack">
+        <div class="bc-seg" style="height:${lq}%;background:#5090C0;"></div>
+        <div class="bc-seg" style="height:${eq}%;background:var(--green);"></div>
+        <div class="bc-seg" style="height:${mt}%;background:var(--gold-bright);"></div>
+      </div>
+      <div class="bc-lbl" style="color:${c};">${MNS[d.n-1]||'Mo.'+d.n}</div>
+      <div class="bc-lbl" style="color:var(--ink2);">${fmtK(d.corpus)}</div>
+    </div>`;
+  });
+}
+
+/* ══════════════════════════════
+   MONTH GRID
+══════════════════════════════ */
+function buildMonthGrid(){
+  const el=document.getElementById('month-grid');if(!el)return;
+  const proj=getP();const tgt=getT();el.innerHTML='';
+  proj.forEach(d=>{
+    const iG=d.corpus>=tgt,iC=[6,12,18].includes(d.n),hL=S.logs[d.n]!==undefined;
+    const cls=iG?'mc goal':iC?'mc checkpoint':hL?'mc logged':'mc';
+    const fl=iG?`<div class="mc-flag" style="background:var(--gold-bright);color:#fff;">🎯</div>`
+      :iC?`<div class="mc-flag" style="background:var(--amber-pale);color:var(--amber);">◉</div>`:'';
+    el.innerHTML+=`<div class="${cls}">${fl}
+      <div class="mc-n">Mo.${d.n}</div>
+      <div class="mc-m">${MNS[d.n-1]||''}</div>
+      <div class="mc-v">${fmtK(d.corpus)}</div>
+      <div class="mc-p">${d.pct.toFixed(0)}%</div>
+    </div>`;
+  });
+}
+
+/* ══════════════════════════════
+   MONTH TABLE
+══════════════════════════════ */
+function buildMonthTable(){
+  const tb=document.getElementById('monthly-tbody');if(!tb)return;
+  const proj=getP();const tgt=getT();tb.innerHTML='';
+  proj.forEach(d=>{
+    const iG=d.corpus>=tgt,iC=[6,12,18].includes(d.n);
+    const st=iG?`<span class="badge bg">🎯 Goal</span>`
+      :d.pct>=85?`<span class="badge bgr">Near</span>`
+      :d.pct>=50?`<span class="badge ba">On track</span>`
+      :`<span class="badge bb">Building</span>`;
+    const bg=iG?'rgba(212,160,23,.05)':iC?'rgba(122,80,0,.025)':'';
+    tb.innerHTML+=`<tr style="background:${bg};">
+      <td class="mono" style="color:var(--faint);">${d.n}</td>
+      <td style="font-weight:${iC||iG?600:400};color:${iG?'var(--gold)':iC?'var(--amber)':'inherit'};">${MNL[d.n-1]||''}</td>
+      <td class="mono" style="font-weight:${iG?700:400};color:${iG?'var(--gold)':'inherit'};">${fmt(d.corpus)}</td>
+      <td class="mono" style="color:${d.pct>=100?'var(--green)':d.pct>=70?'var(--amber)':'var(--muted)'};">${d.pct.toFixed(1)}%</td>
+      <td>${st}</td>
+    </tr>`;
+  });
+}
+
+/* ══════════════════════════════
+   LOG ACTUAL
+══════════════════════════════ */
+function buildLogRows(){
+  const el=document.getElementById('log-rows');if(!el)return;
+  const mx=Math.min(22,getP().length);el.innerHTML='';
+  for(let i=1;i<=mx;i++){
+    const v=S.logs[i]||'';
+    el.innerHTML+=`<div class="log-item">
+      <div class="log-n">${i}</div>
+      <div class="log-mon">${MNL[i-1]||''}</div>
+      <input class="log-input" type="number" id="li-${i}" value="${v}" placeholder="50000" inputmode="numeric" oninput="updateActSum()"/>
+      <div class="log-status" id="ls-${i}"></div>
+    </div>`;
+  }
+  updateActSum();
+}
+function updateActSum(){
+  let tot=0,plan=0,n=0;
+  const mx=Math.min(22,getP().length);
+  for(let i=1;i<=mx;i++){
+    const inp=document.getElementById('li-'+i);if(!inp)continue;
+    const v=parseFloat(inp.value)||0;
+    if(v>0){tot+=v;plan+=50000;n++;}
+    const s=document.getElementById('ls-'+i);
+    if(s){
+      if(!inp.value)s.innerHTML='';
+      else if(v>=50000)s.innerHTML='✅';
+      else if(v>=40000)s.innerHTML='🟡';
+      else s.innerHTML='🔴';
+    }
+  }
+  const va=tot-plan;
+  const at=document.getElementById('act-total');if(at)at.textContent=fmt(tot);
+  const as=document.getElementById('act-sub');if(as)as.textContent=`${n} months logged`;
+  const av=document.getElementById('act-var');if(av){av.textContent=(va>=0?'+':'')+fmt(va);av.style.color=va>=0?'var(--green)':'var(--red)';}
+  const avs=document.getElementById('act-var-sub');if(avs)avs.textContent=va>=0?'Ahead of plan 🎉':`Behind — catch up needed`;
+  buildActChart();
+}
+function buildActChart(){
+  const el=document.getElementById('act-chart');if(!el)return;
+  const mx=Math.min(22,getP().length);el.innerHTML='';
+  for(let i=1;i<=mx;i++){
+    const inp=document.getElementById('li-'+i);
+    const v=inp?(parseFloat(inp.value)||0):(S.logs[i]||0);
+    const pH=60,aH=v?Math.min(60,Math.round((v/50000)*60)):0;
+    const c=v===0?'var(--cream3)':v>=50000?'var(--green)':v>=40000?'var(--amber)':'var(--red)';
+    el.innerHTML+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div style="width:100%;display:flex;align-items:flex-end;justify-content:center;gap:1px;height:62px;">
+        <div style="width:40%;height:${pH*.8}px;background:var(--cream3);border-radius:2px 2px 0 0;"></div>
+        <div style="width:40%;height:${aH*.8}px;background:${c};border-radius:2px 2px 0 0;"></div>
+      </div>
+      <div style="font-size:7px;color:var(--faint);font-family:'JetBrains Mono',monospace;">${i}</div>
+    </div>`;
+  }
+}
+function saveActual(){
+  const mx=Math.min(22,getP().length);
+  for(let i=1;i<=mx;i++){
+    const inp=document.getElementById('li-'+i);
+    if(inp&&inp.value)S.logs[i]=parseFloat(inp.value)||0;
+    else delete S.logs[i];
+  }
+  save();buildMonthGrid();showToast('Saved ✓','success');
+}
+function clearActual(){S.logs={};save();buildLogRows();buildMonthGrid();showToast('Cleared','success');}
+
+/* ══════════════════════════════
+   SIMULATOR
+══════════════════════════════ */
+function runSim(){
+  const g=parseInt(document.getElementById('sl-gold').value);
+  const si=parseInt(document.getElementById('sl-silver').value);
+  const m=parseInt(document.getElementById('sl-monthly').value);
+  const eq=parseFloat(document.getElementById('sl-eq').value);
+  const mt=parseFloat(document.getElementById('sl-met').value);
+  document.getElementById('sv-gold').textContent=fmt(g);
+  document.getElementById('sv-silver').textContent=fmt(si);
+  document.getElementById('sv-monthly').textContent=fmt(m);
+  document.getElementById('sv-eq').textContent=eq+'%';
+  document.getElementById('sv-met').textContent=mt+'%';
+  const gT=g*5,siT=si*2,tot=gT+siT,raw=tot/m;
+  const proj=project(tot,m,eq,mt,48);
+  const gm=proj.length;
+  const boost=Math.max(0,proj[gm-1].corpus-(gm*m));
+  document.getElementById('sim-months').textContent=gm;
+  document.getElementById('sim-date').textContent='Goal: '+goalDt(gm);
+  document.getElementById('sim-r-gold').textContent=fmt(gT);
+  document.getElementById('sim-r-silver').textContent=fmt(siT);
+  document.getElementById('sim-r-total').textContent=fmt(tot);
+  document.getElementById('sim-r-monthly').textContent=fmt(m);
+  document.getElementById('sim-r-boost').textContent='~'+fmtK(boost);
+  document.getElementById('sim-r-raw').textContent=raw.toFixed(1)+' mo';
+  const adv=document.getElementById('sim-advice');
+  if(adv)adv.textContent=gm<=18?'✅ Excellent! Under 18 months. Consider reducing mid-cap allocation slightly.':gm<=22?'🟢 On track. Stick to plan, no early exits.':gm<=28?'🟡 Stretched. Increase monthly by ₹5–10K to hit 22 months.':'🔴 Over 2 years. Increase monthly amount or reduce target.';
+}
+
+/* ══════════════════════════════
+   TAX
+══════════════════════════════ */
+function calcTax(){
+  const corpus=parseFloat(document.getElementById('tx-corpus')?.value)||1450000;
+  const inv=parseFloat(document.getElementById('tx-inv')?.value)||1100000;
+  const slab=parseFloat(document.getElementById('tx-slab')?.value)||20;
+  const gain=Math.max(0,corpus-inv);
+  const mt=gain*.46,eq=gain*.44,lq=gain*.10;
+  const mtTax=mt*(slab/100);// metal ETF still STCG at mo22
+  const eqTax=Math.max(0,eq-125000)*.125;// LTCG equity
+  const lqTax=lq*(slab/100);
+  const tot=mtTax+eqTax+lqTax;
+  const el=document.getElementById('tax-result');if(!el)return;
+  el.innerHTML=`
+    <div class="tax-box">
+      <div class="tax-row"><span class="t-lbl">Total gain</span><span class="t-val" style="color:var(--green);">${fmt(gain)}</span></div>
+      <div class="tax-row"><span class="t-lbl">Metal ETF tax (STCG ${slab}%)</span><span class="t-val" style="color:var(--red);">${fmt(mtTax)}</span></div>
+      <div class="tax-row"><span class="t-lbl">Equity MF tax (LTCG)</span><span class="t-val" style="color:var(--red);">${fmt(eqTax)}</span></div>
+      <div class="tax-row"><span class="t-lbl">Liquid fund tax (${slab}%)</span><span class="t-val" style="color:var(--red);">${fmt(lqTax)}</span></div>
+      <div class="tax-row" style="border-top:2px solid var(--border);padding-top:10px;margin-top:4px;">
+        <span class="t-lbl" style="font-weight:700;font-size:13px;">Total tax</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--red);">${fmt(tot)}</span>
+      </div>
+    </div>
+    <div style="background:var(--green-pale);border-radius:12px;padding:13px;border-left:2.5px solid var(--green);margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;font-weight:700;color:var(--green);">Net take-home</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:var(--green);">${fmt(corpus-tot)}</span>
+      </div>
+    </div>
+    <div class="callout callout-amber">⚠ Metal ETFs need >24 months for LTCG (12.5%). At month 22, they're STCG. Hold 2 more months → save ${fmt(mt*(slab/100-0.125))} extra tax.</div>`;
+}
+
+/* ══════════════════════════════
+   MILESTONES
+══════════════════════════════ */
+const CLIST=[
+  {ph:'🔧 Setup — Week 1–2',col:'var(--blue)',items:[['Week 1','Open Demat — Zerodha / Groww / Upstox'],['Week 1','Complete eKYC (Aadhaar + PAN)'],['Week 1','Set up 5 SIPs on 1st of every month'],['Week 1','Enable UPI AutoPay mandate'],['Week 2','Add nominee to demat + MF folio'],['Week 2','Enable 2FA (Google Authenticator)'],['Week 2','Create watchlist: GOLDBEES, SILVERETF']]},
+  {ph:'📅 Month 1–5 — May–Sep 2026',col:'var(--green)',items:[['May 2026','First SIP executes — confirm ₹50K invested'],['Monthly','Verify SIP on 1st via app notification'],['Monthly','Do NOT check daily NAVs — stay disciplined'],['Monthly','Track ETF units growing in demat']]},
+  {ph:'◉ Checkpoint 1 — Oct 2026',col:'var(--amber)',items:[['Oct 2026','Review corpus — should be ~₹3.1–3.3L'],['Oct 2026','Check Gold + Silver ETF units accumulated'],['Oct 2026','If gold moved ±15%, update target in Simulator'],['Oct 2026','Confirm equity SIPs performing vs benchmark']]},
+  {ph:'◉ Checkpoint 2 — Apr 2027',col:'var(--amber)',items:[['Apr 2027','Mid-point — corpus should be ~₹6.5–6.8L'],['Apr 2027','Compare equity returns to Nifty 50'],['Apr 2027','DO NOT exit SIPs even if markets fall'],['Apr 2027','Assess if monthly amount can be increased']]},
+  {ph:'◉ Checkpoint 3 — Oct 2027',col:'var(--amber)',items:[['Oct 2027','Pre-exit — corpus ~₹10.5L'],['Oct 2027','Get gold bar quote from MMTC-PAMP'],['Oct 2027','Get silver quote from Augmont'],['Oct 2027','Plan staggered equity exit over months 20–22']]},
+  {ph:'🎯 Final — Dec 2027–Feb 2028',col:'var(--gold)',items:[['Dec 2027','Begin partial equity SIP redemption'],['Jan 2028','Continue staggered equity exit'],['Jan 2028','Hold Gold/Silver ETFs — do not redeem yet'],['Feb 2028','Redeem Gold ETF → buy 5 tola from MMTC-PAMP'],['Feb 2028','Redeem Silver ETF → buy 2 kg from Augmont'],['Feb 2028','Get purchase receipts — needed for tax ITR'],['Feb 2028','Keep liquid fund — emergency buffer']]},
+  {ph:'📋 Post Goal — Mar 2028+',col:'var(--silver)',items:[['Mar 2028','File capital gains in ITR'],['Apr 2028','Define next goal and restart SIPs 🚀']]}
+];
+function buildMilestones(){
+  const el=document.getElementById('milestone-list');if(!el)return;
+  let tot=0,done=0;el.innerHTML='';
+  CLIST.forEach((sec,si)=>{
+    let html=`<div class="check-section" style="border-left:3px solid ${sec.col};">
+      <div class="check-phase" style="color:${sec.col};">${sec.ph}</div>`;
+    sec.items.forEach((item,ii)=>{
+      const k=`c-${si}-${ii}`;const dn=!!S.checks[k];
+      if(dn)done++;tot++;
+      html+=`<div class="check-item">
+        <div class="check-box${dn?' done':''}" onclick="toggleCheck('${k}',this)">${dn?'✓':''}</div>
+        <span class="check-when">${item[0]}</span>
+        <span class="check-text${dn?' done':''}">${item[1]}</span>
+      </div>`;
+    });
+    html+='</div>';el.innerHTML+=html;
+  });
+  const pct=Math.round(done/tot*100);
+  const cp=document.getElementById('cp-txt');if(cp)cp.textContent=`${done} / ${tot} completed`;
+  const pp=document.getElementById('cp-pct');if(pp)pp.textContent=pct+'%';
+}
+function toggleCheck(k,box){
+  S.checks[k]=!S.checks[k];
+  box.classList.toggle('done');box.textContent=S.checks[k]?'✓':'';
+  const txt=box.parentElement.querySelector('.check-text');
+  if(txt)txt.classList.toggle('done',S.checks[k]);
+  const tot=CLIST.reduce((a,s)=>a+s.items.length,0);
+  const done=Object.values(S.checks).filter(Boolean).length;
+  const pct=Math.round(done/tot*100);
+  const cp=document.getElementById('cp-txt');if(cp)cp.textContent=`${done} / ${tot} completed`;
+  const pp=document.getElementById('cp-pct');if(pp)pp.textContent=pct+'%';
+}
+function saveChecks(){save();showToast('Progress saved ✓','success');}
+function resetChecks(){S.checks={};save();buildMilestones();showToast('Reset','success');}
+
+/* ══════════════════════════════
+   INIT
+══════════════════════════════ */
+rebuildAll();
+
+// Tax sheet — add a button in the simulator panel
+document.addEventListener('DOMContentLoaded',()=>{
+  const simPanel=document.getElementById('panel-simulator');
+  if(simPanel){
+    const btn=document.createElement('button');
+    btn.className='btn-sm btn-sm-outline';
+    btn.style.cssText='width:100%;margin-top:10px;margin-bottom:14px;';
+    btn.textContent='🧾 Open Tax Estimator';
+    btn.onclick=openTaxSheet;
+    simPanel.appendChild(btn);
+  }
+});
+</script>
+</body>
+</html>
